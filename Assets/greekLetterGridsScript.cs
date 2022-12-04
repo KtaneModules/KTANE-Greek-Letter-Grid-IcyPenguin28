@@ -953,7 +953,6 @@ public class greekLetterGridsScript : MonoBehaviour
                 int index = int.Parse(lettersCorrect[i].Replace("Yellow", ""));
                 lettersCorrect[i] = lettersCorrect[index];
                 DebugLog("The correct coordinate for λ condition #4 is " + lettersCorrect[i]);
-                break;
             }
         }
         letter1CorrectX = possibleXorZ[lettersCorrect[0][0] - 'A'];
