@@ -13,9 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: greekLetterGrid
   title: Greek Letter Grid
-  author: 
+  author: IcyPenguin_
   description: Move 3 Greek letters on a 4x4 grid according to edgework and the properties
     of the letters.
-  version: 
+  version: 1.3
   outputFolder: build
   previewImage: {fileID: 2800000, guid: 62f272089a382a74a9cfab003c74d747, type: 3}

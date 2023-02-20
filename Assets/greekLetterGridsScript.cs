@@ -7,8 +7,8 @@ using KModkit;
 
 public class greekLetterGridsScript : MonoBehaviour
 {
-    public KMAudio Audio;
-    public KMBombInfo Bomb;
+    public KMAudio audio;
+    public KMBombInfo bomb;
 
     public KMSelectable upButton;
     public KMSelectable downButton;
@@ -21,7 +21,6 @@ public class greekLetterGridsScript : MonoBehaviour
     private KMSelectable selectedLetter;
     string[] possibleLetters = { "A", "α", "B", "β", "Γ", "γ", "Δ", "δ", "Θ", "θ", "Λ", "λ", "Π", "π", "Σ", "σ", "Ω", "ω" };
     Color[] possibleColors = { new Color(1, 1, 1, 1), new Color(1, 0, 1, 1), new Color(1, 1, 0, 1), new Color(0, 1, 0, 1), new Color(0, 1, 1, 1) }; //Order of Colors: White, Magenta, Yellow, Green, Cyan
-    string[] colorNames = new string[] { "White", "Magenta", "Yellow", "Green", "Cyan" };
     float[] possibleXorZ = { -0.0375f, -0.0125f, 0.0125f, 0.0375f };
     int[] letterIndex = new int[3];
     int[] colorIndex = new int[3];
@@ -174,7 +173,8 @@ public class greekLetterGridsScript : MonoBehaviour
         foreach (KMSelectable letter in letters)
         {
             KMSelectable pressedLetter = letter;
-            letter.OnInteract += delegate () { PressLetter(pressedLetter); return false; };
+            TextMesh text = letter.GetComponent<TextMesh>();
+            letter.OnInteract += delegate () { PressLetter(pressedLetter, text); return false; };
         }
         upButton.OnInteract += delegate () { PressUpButton(); return false; };
         downButton.OnInteract += delegate () { PressDownButton(); return false; };
@@ -252,7 +252,7 @@ public class greekLetterGridsScript : MonoBehaviour
     void DefineEdgework()
     {
         bombEdgework = new Edgework();
-        string serialNumber = Bomb.GetSerialNumber();
+        string serialNumber = bomb.GetSerialNumber();
         string serialNumberLastChar = serialNumber.Substring(serialNumber.Length - 1);
         DebugLog("The last digit of the serial # is " + serialNumberLastChar);
         if (oddDigits.Contains(serialNumberLastChar))
@@ -273,22 +273,22 @@ public class greekLetterGridsScript : MonoBehaviour
             DebugLog("The last digit of the serial # is COMPOSITE");
         }
         bombEdgework.SerialNumber = serialNumber;
-        bombEdgework.SerialNumberLetters = Bomb.GetSerialNumberLetters();
-        bombEdgework.SNDIndicatorOff = Bomb.IsIndicatorOff("SND") || Bomb.IsIndicatorOff("IND");
-        bombEdgework.CARIndicatorOff = Bomb.IsIndicatorOff("CAR");
-        bombEdgework.CLRIndicatorOn = Bomb.IsIndicatorOn("CLR");
-        bombEdgework.SIGIndicatorOn = Bomb.IsIndicatorOn("SIG");
-        bombEdgework.DVINotRJ = Bomb.IsPortPresent(Port.DVI) && !Bomb.IsPortPresent(Port.RJ45);
-        bombEdgework.RCAPresent = Bomb.IsPortPresent(Port.StereoRCA);
-        bombEdgework.ParallelPresent = Bomb.IsPortPresent(Port.Parallel);
-        bombEdgework.EmptyPlate = Bomb.GetPortPlates().Any(x => x.Length == 0);
-        bombEdgework.PS2orDuplicate = Bomb.IsPortPresent(Port.PS2) || Bomb.IsDuplicatePortPresent();
-        bombEdgework.OnIndicatorCount = Bomb.GetOnIndicators().Count();
-        bombEdgework.OffIndicatorCount = Bomb.GetOffIndicators().Count();
-        bombEdgework.PortPlateCount = Bomb.GetPortPlateCount();
-        bombEdgework.DBatteryCount = Bomb.GetBatteryCount(Battery.D);
-        bombEdgework.AABatteryCount = Bomb.GetBatteryCount(Battery.AA) + Bomb.GetBatteryCount(Battery.AAx3) + Bomb.GetBatteryCount(Battery.AAx4);
-        bombEdgework.BatteryHolderCount = Bomb.GetBatteryHolderCount();
+        bombEdgework.SerialNumberLetters = bomb.GetSerialNumberLetters();
+        bombEdgework.SNDIndicatorOff = bomb.IsIndicatorOff("SND") || bomb.IsIndicatorOff("IND");
+        bombEdgework.CARIndicatorOff = bomb.IsIndicatorOff("CAR");
+        bombEdgework.CLRIndicatorOn = bomb.IsIndicatorOn("CLR");
+        bombEdgework.SIGIndicatorOn = bomb.IsIndicatorOn("SIG");
+        bombEdgework.DVINotRJ = bomb.IsPortPresent(Port.DVI) && !bomb.IsPortPresent(Port.RJ45);
+        bombEdgework.RCAPresent = bomb.IsPortPresent(Port.StereoRCA);
+        bombEdgework.ParallelPresent = bomb.IsPortPresent(Port.Parallel);
+        bombEdgework.EmptyPlate = bomb.GetPortPlates().Any(x => x.Length == 0);
+        bombEdgework.PS2orDuplicate = bomb.IsPortPresent(Port.PS2) || bomb.IsDuplicatePortPresent();
+        bombEdgework.OnIndicatorCount = bomb.GetOnIndicators().Count();
+        bombEdgework.OffIndicatorCount = bomb.GetOffIndicators().Count();
+        bombEdgework.PortPlateCount = bomb.GetPortPlateCount();
+        bombEdgework.DBatteryCount = bomb.GetBatteryCount(Battery.D);
+        bombEdgework.AABatteryCount = bomb.GetBatteryCount(Battery.AA) + bomb.GetBatteryCount(Battery.AAx3) + bomb.GetBatteryCount(Battery.AAx4);
+        bombEdgework.BatteryHolderCount = bomb.GetBatteryHolderCount();
     }
 
     void Rules(int bombTime, int solvedModules, int strikes)
@@ -732,7 +732,7 @@ public class greekLetterGridsScript : MonoBehaviour
                         DebugLog("UPPERCASE PI CONDITION: #1 (Happy Pi Day!)");
                     }
                     //Otherwise, if there is either a P or an I in the serial number...
-                    else if (Bomb.GetSerialNumberLetters().Any(x => x == 'P' || x == 'I'))
+                    else if (bomb.GetSerialNumberLetters().Any(x => x == 'P' || x == 'I'))
                     {
                         lettersCorrect[i] = "B4";
                         DebugLog("UPPERCASE PI CONDITION: #2 (serial number P or I detected)");
@@ -774,14 +774,14 @@ public class greekLetterGridsScript : MonoBehaviour
                         DebugLog("LOWERCASE PI CONDITION: #2 (battery holder count is 3, 1, or 4)");
                     }
                     //Otherwise, if the number of indicators (both lit and unlit) is either 3, 1, or 4...
-                    else if (Bomb.GetIndicators().Count() == 3 || Bomb.GetIndicators().Count() == 1 || Bomb.GetIndicators().Count() == 4)
+                    else if (bomb.GetIndicators().Count() == 3 || bomb.GetIndicators().Count() == 1 || bomb.GetIndicators().Count() == 4)
                     {
                         int zIndex = 4 - indicatorCount;
                         lettersCorrect[i] = CoordinateConversion(possibleXorZ[1], possibleXorZ[zIndex]);
                         DebugLog("LOWERCASE PI CONDITION: #3 (indicator count is 3, 1, or 4)");
                     }
                     //Otherwise, if the number of solved modules is either 3, 1, or 4...
-                    else if (Bomb.GetSolvedModuleNames().Count() == 3 || Bomb.GetSolvedModuleNames().Count() == 1 || Bomb.GetSolvedModuleNames().Count() == 4)
+                    else if (bomb.GetSolvedModuleNames().Count() == 3 || bomb.GetSolvedModuleNames().Count() == 1 || bomb.GetSolvedModuleNames().Count() == 4)
                     {
                         int zIndex = 4 - solvedModules;
                         lettersCorrect[i] = CoordinateConversion(possibleXorZ[2], possibleXorZ[zIndex]);
@@ -986,6 +986,7 @@ public class greekLetterGridsScript : MonoBehaviour
         upButton.AddInteractionPunch();
         if (selectedLetter != null && moduleSolved == false)
         {
+            DebugLog("You pressed up! You deserve a cookie!");
             if (!Mathf.Approximately(selectedLetterZ, 0.0375f))
             {
                 selectedLetter.transform.localPosition = new Vector3(selectedLetterX, 0.013f, selectedLetterZ + 0.025f);
@@ -999,6 +1000,7 @@ public class greekLetterGridsScript : MonoBehaviour
         downButton.AddInteractionPunch();
         if (selectedLetter != null && moduleSolved == false)
         {
+            DebugLog("You pressed down! You deserve a cookie!");
             if (!Mathf.Approximately(selectedLetterZ, -0.0375f))
             {
                 selectedLetter.transform.localPosition = new Vector3(selectedLetterX, 0.013f, selectedLetterZ - 0.025f);
@@ -1012,6 +1014,7 @@ public class greekLetterGridsScript : MonoBehaviour
         leftButton.AddInteractionPunch();
         if (selectedLetter != null && moduleSolved == false)
         {
+            DebugLog("You pressed left! You deserve a cookie!");
             if (!Mathf.Approximately(selectedLetterX, -0.0375f))
             {
                 selectedLetter.transform.localPosition = new Vector3(selectedLetterX - 0.025f, 0.013f, selectedLetterZ);
@@ -1025,6 +1028,7 @@ public class greekLetterGridsScript : MonoBehaviour
         rightButton.AddInteractionPunch();
         if (selectedLetter != null && moduleSolved == false)
         {
+            DebugLog("You pressed right! You deserve a cookie!");
             if (!Mathf.Approximately(selectedLetterX, 0.0375f))
             {
                 selectedLetter.transform.localPosition = new Vector3(selectedLetterX + 0.025f, 0.013f, selectedLetterZ);
@@ -1042,6 +1046,7 @@ public class greekLetterGridsScript : MonoBehaviour
         }
         else
         {
+            DebugLog("You reset the module.");
             for (int i = 0; i < letters.Length; i++)
             {
                 letters[i].transform.localPosition = new Vector3(lettersInitialX[i], 0.013f, lettersInitialZ[i]);
@@ -1060,10 +1065,10 @@ public class greekLetterGridsScript : MonoBehaviour
             return;
         }
 
-        int bombTime = (int)Bomb.GetTime() / 60;
+        int bombTime = (int)bomb.GetTime() / 60;
 
         //Rules based on user action
-        Rules(bombTime, Bomb.GetSolvedModuleNames().Count, Bomb.GetStrikes());
+        Rules(bombTime, bomb.GetSolvedModuleNames().Count, bomb.GetStrikes());
         if (noCondition && bombTime % 2 == 0)
         {
             GetComponent<KMBombModule>().HandleStrike();
@@ -1076,7 +1081,7 @@ public class greekLetterGridsScript : MonoBehaviour
         {
             moduleSolved = true;
             GetComponent<KMBombModule>().HandlePass();
-            Audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
+            audio.PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.CorrectChime, transform);
             DebugLog("Module solved. Gj!");
         }
         else
@@ -1084,18 +1089,24 @@ public class greekLetterGridsScript : MonoBehaviour
             GetComponent<KMBombModule>().HandleStrike();
             float[] lettersCorrectX = { letter1CorrectX, letter2CorrectX, letter3CorrectX };
             float[] lettersCorrectZ = { letter1CorrectZ, letter2CorrectZ, letter3CorrectZ };
-            DebugLog("You failed. Try again, but do better!");
+            string firstMessage = "You failed. Try again, but do better! ";
             for (int i = 0; i < 3; i++)
-                DebugLog("The correct coordinate for Letter {0} ({1} in {2}) was {3}. Your submitted coordinate was {4}.", i+1, letters[i].GetComponent<TextMesh>().text, colorNames[colorIndex[i]], CoordinateConversion(lettersCorrectX[i], lettersCorrectZ[i]), CoordinateConversion(lettersCurrentX[i], lettersCurrentZ[i]));
+            {
+                string log = "The correct coordinate for Letter " + i + " was " + CoordinateConversion(lettersCorrectX[i], lettersCorrectZ[i]) + ". Your submitted coordinate was " + CoordinateConversion(lettersCurrentX[i], lettersCurrentZ[i]);
+                if (i == 0)
+                    log = firstMessage + log;
+                DebugLog(log);
+            }
             Start(); //Reset module with new letters in new positions.
 
         }
     }
 
     //Letter Button Interaction Methods
-    void PressLetter(KMSelectable letter)
+    void PressLetter(KMSelectable letter, TextMesh text)
     {
         GetComponent<KMAudio>().PlayGameSoundAtTransform(KMSoundOverride.SoundEffect.ButtonPress, transform);
+        DebugLog("You pressed " + text);
         selectedLetter = letter;
         selectedLetter.AddInteractionPunch();
     }
@@ -1107,8 +1118,9 @@ public class greekLetterGridsScript : MonoBehaviour
     }
 
     //TP Support
-    private string TwitchHelpMessage = "Select a letter to move with !{0} select [1 | 2 | 3]. Use the arrow buttons with !{0} [press | move] [u | l | r | d]. You can string as many movements together in one command so long as there is no separation between movements. Reset with !{0} reset. Submit with !{0} submit.";
-    private KMSelectable[] ProcessTwitchCommand(string command)
+    int TwitchModuleScore = 1;
+    public string TwitchHelpMessage = "Select a letter to move with !{0} select [1 | 2 | 3]. Use the arrow buttons with !{0} [press | move] [u | l | r | d]. You can string as many movements together in one command so long as there is no separation between movements. Reset with !{0} reset. Submit with !{0} submit.";
+    public KMSelectable[] ProcessTwitchCommand(string command)
     {
         //Select Letter
         if (command.Equals("select 1", StringComparison.InvariantCultureIgnoreCase))
@@ -1172,9 +1184,9 @@ public class greekLetterGridsScript : MonoBehaviour
     IEnumerator TwitchHandleForcedSolve()
     {
         //Make sure the time it takes to solve doesn't change the answer
-        var currentStrikes = Bomb.GetStrikes();
-        var currentSolves = Bomb.GetSolvedModuleNames().Count;
-        var currentMinute = (int)Bomb.GetTime() / 60;
+        var currentStrikes = bomb.GetStrikes();
+        var currentSolves = bomb.GetSolvedModuleNames().Count;
+        var currentMinute = (int)bomb.GetTime() / 60;
 
         Rules(currentMinute, currentSolves, currentStrikes);
         var lettersCorrectX = new[] { letter1CorrectX, letter2CorrectX, letter3CorrectX };
@@ -1212,7 +1224,7 @@ public class greekLetterGridsScript : MonoBehaviour
             }
         }
         //Took too long to press buttons
-        if (currentMinute != (int)Bomb.GetTime() / 60 || currentSolves != Bomb.GetSolvedModuleNames().Count || currentStrikes != Bomb.GetStrikes())
+        if (currentMinute != (int)bomb.GetTime() / 60 || currentSolves != bomb.GetSolvedModuleNames().Count || currentStrikes != bomb.GetStrikes())
         {
             TwitchHandleForcedSolve();
             yield break;
